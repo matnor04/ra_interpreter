@@ -1,0 +1,13 @@
+# Haskell / Stack
+.stack-work/
+dist/
+dist-newstyle/
+*.o
+*.hi
+*.chi
+*.chs.h
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

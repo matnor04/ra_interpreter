@@ -1,0 +1,44 @@
+-- Mostrar la tabla S
+S 
+
+-- Salir del programa
+exit 
+
+-- Mostrar el catálogo
+getcat
+
+-- Proveedores de Londres
+SELECT (SCIUDAD = "Londres") S
+
+-- Obtener solo Nombres y Ciudad de los proveedores de Paris
+PROJECT [SNOMBRE, SCIUDAD] (SELECT (SCIUDAD = "Paris") S)
+
+-- Productos que pesan más de 15 o son Rojos
+SELECT (PESO > 15 or COLOR = "Rojo") P
+
+-- Proveedores de Londres o París
+(SELECT (SCIUDAD = "Londres") S) U (SELECT (SCIUDAD = "Paris") S)
+
+-- Proveedores que NO son de Londres
+S - (SELECT (SCIUDAD = "Londres") S)
+
+-- Algo que sea Rojo y esté en Londres 
+(SELECT (COLOR = "Rojo") P) $ (SELECT (PCIUDAD = "Londres") P)
+
+-- Unir toda la información (quién envió qué y cuánto, a qué proyecto)
+((S |X| SPJ) |X| P) |X| J
+
+-- Renombrar los atributos de la Tabla S a Prov 
+RENAME Prov S
+
+-- Proveedores que suministren TODAS las partes
+(PROJECT [SID, PID] SPJ) / (PROJECT [PID] P)
+
+-- Total enviado por cada Proveedor
+GROUP [SID] (SUM CANT AS Total_Piezas) SPJ
+
+-- Cuántos proveedores hay por Ciudad
+GROUP [SCIUDAD] (COUNT AS Cantidad_Prov) S
+
+-- Máximo envío realizado por ciudad del proyecto
+GROUP [JCIUDAD] (MAX CANT AS Max_Envio) (SPJ |X| J)

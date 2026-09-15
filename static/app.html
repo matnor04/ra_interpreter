@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intérprete AR - Studio</title>
+    <style>
+        /* Diseño tipo VS Code / DataGrip */
+        *, *::before, *::after { box-sizing: border-box; }
+        body {
+            margin: 0; padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #1e1e1e; /* Modo oscuro estricto */
+            color: #ffffff;
+            display: flex; flex-direction: column; height: 100vh; overflow: hidden;
+        }
+        .header { background: #2d2d2d; padding: 15px 20px; font-size: 18px; font-weight: bold; border-bottom: 1px solid #404040; display: flex; align-items: center; gap: 10px; }
+        .main-content { display: flex; flex: 1; overflow: hidden; }
+        
+        .sidebar { width: 220px; background: #252526; border-right: 1px solid #404040; padding: 20px; display: flex; flex-direction: column; }
+        .badge { display: block; background: #37373d; padding: 8px 12px; border-radius: 4px; margin-bottom: 10px; cursor: pointer; font-size: 14px; font-family: monospace; transition: 0.2s; }
+        .badge:hover { background: #505050; border-left: 3px solid #0e639c; }
+
+        .editor-area { flex: 1; display: flex; flex-direction: column; background: #1e1e1e; }
+        .editor-header { padding: 10px 20px; background: #2d2d2d; display: flex; justify-content: space-between; align-items: center; }
+        
+        textarea {
+            flex: 0 0 120px; background: #1e1e1e; color: #9cdcfe; 
+            font-family: 'Courier New', Courier, monospace; font-size: 16px; 
+            border: none; padding: 20px; resize: none; outline: none;
+        }
+        
+        .button-run { background: #0e639c; color: white; border: none; padding: 8px 20px; font-size: 14px; font-weight: bold; border-radius: 4px; cursor: pointer; }
+        .button-run:hover { background: #1177bb; }
+        
+        .results-area { flex: 1; background: #1e1e1e; border-top: 1px solid #404040; padding: 20px; overflow: auto; color: #d4d4d4; }
+        
+        table { width: 100%; border-collapse: collapse; font-family: monospace; font-size: 14px; }
+        th, td { border: 1px solid #404040; padding: 10px; text-align: left; }
+        th { background: #2d2d2d; color: #cccccc; position: sticky; top: 0; }
+        tr:hover { background: #2a2d2e; }
+    </style>
+</head>
+<body role="application">
+    <div class="header">⚡ Álgebra Relacional Studio</div>
+    <div class="main-content">
+        <!-- Panel Izquierdo: Catálogo -->
+        <div class="sidebar">
+            <div style="font-size: 11px; color: #858585; margin-bottom: 15px; letter-spacing: 1px;">TABLAS EN MEMORIA</div>
+            <div id="lista-tablas">⏳ Conectando...</div>
+        </div>
+        
+        <!-- Panel Derecho: Editor y Resultados -->
+        <div class="editor-area">
+            <div class="editor-header">
+                <div style="font-size: 13px; color: #858585;">Editor de Consultas</div>
+                <button class="button-run" onclick="ejecutar()">▶ Ejecutar</button>
+            </div>
+            
+            <textarea id="codigo" placeholder="-- Escribe tu consulta aquí...&#10;SELECT (CIUDAD = 'Londres') S"></textarea>
+            
+            <div class="results-area" id="resultado">
+                <div style="color: #858585; text-align: center; margin-top: 40px;">Los resultados de la consulta aparecerán aquí.</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        window.onload = async function() {
+            try {
+                const res = await fetch('/api/catalog');
+                const tablas = await res.json();
+                const container = document.getElementById('lista-tablas');
+                container.innerHTML = '';
+                tablas.forEach(t => {
+                    container.innerHTML += `<div class="badge" onclick="verTabla('${t}')">🗄️ ${t}</div>`;
+                });
+            } catch (e) {
+                document.getElementById('lista-tablas').innerHTML = '<span style="color: #f48771;">Error de servidor</span>';
+            }
+        };
+
+        function verTabla(nombre) {
+            document.getElementById('codigo').value = nombre;
+            ejecutar();
+        }
+
+        async function ejecutar() {
+            const codigo = document.getElementById('codigo').value.trim();
+            if (codigo === "") return;
+
+            const divRes = document.getElementById('resultado');
+            divRes.innerHTML = "<div style='color: #858585;'>⏳ Ejecutando en servidor Haskell...</div>";
+
+            try {
+                const url = '/api/ejecutar?consulta=' + encodeURIComponent(codigo);
+                const response = await fetch(url, { method: 'POST' });
+                const res = await response.json();
+
+                if (res.status === 'error') {
+                    divRes.innerHTML = `<div style="color: #f48771; padding: 15px; background: #3a1c1c; border-radius: 5px;">❌ <strong>Error:</strong> ${res.msg}</div>`;
+                } else if (res.status === 'info') {
+                    window.onload(); // Recargar el menú izquierdo si hubo cambios
+                    divRes.innerHTML = `<div style="color: #89d185;">✅ ${res.msg}</div>`;
+                } else {
+                    dibujarTabla(res.data, divRes);
+                }
+            } catch (e) {
+                divRes.innerHTML = `<div style="color: #f48771;">❌ Error crítico de conexión.</div>`;
+            }
+        }
+
+        function dibujarTabla(filas, contenedor) {
+            if (!filas || filas.length === 0) {
+                contenedor.innerHTML = "<div style='color: #89d185;'>✅ Consulta exitosa (0 filas afectadas).</div>";
+                return;
+            }
+            const columnas = Object.keys(filas[0]);
+            let html = "<table><thead><tr>";
+            columnas.forEach(col => html += `<th>${col}</th>`);
+            html += "</tr></thead><tbody>";
+            
+            filas.forEach(fila => {
+                html += "<tr>";
+                columnas.forEach(col => html += `<td>${fila[col]}</td>`);
+                html += "</tr>";
+            });
+            html += "</tbody></table>";
+            contenedor.innerHTML = html;
+        }
+    </script>
+</body>
+</html>

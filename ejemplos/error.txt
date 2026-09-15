@@ -1,0 +1,30 @@
+-- Falta cerrar paréntesis
+SELECT (SCIUDAD = "Londres" S
+
+-- Palabra reservada (exit)
+exit <- SELECT (JCIUDAD = "Atenas") (J |X| SPJ)
+
+-- Tabla no encontrada 
+SELECT (A > 10) TablaX
+
+-- Proyectar atributo no existente
+PROJECT [NumTelefono] S
+
+-- Filtrar por atributo no existente 
+SELECT (EDAD > 20) S
+
+-- Comparación de Int con String, error de tipo
+SELECT (SITUACION = "Alta") S
+
+-- Violación de esquemas
+S U P
+S - J
+
+-- Faltan atributos para división
+S / P
+
+-- Agrupar por atributo inexistente
+GROUP [CodPostal] (COUNT AS Total) S
+
+-- Error de tipo al intentar usar la función de agregado SUM con string
+GROUP [SCIUDAD] (SUM SNOMBRE AS Error_Suma) S

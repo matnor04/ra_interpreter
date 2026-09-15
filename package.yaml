@@ -1,0 +1,41 @@
+name:                interprete-ar      # <--- CAMBIO: Usar guión medio, no bajo
+version:             0.1.0.0
+github:              "githubuser/interprete-ar"
+license:             BSD3
+author:              "Author name"
+maintainer:          "example@example.com"
+copyright:           "2026 Author name"
+
+extra-source-files:
+- README.md
+
+# Global dependencies
+dependencies:
+- base >= 4.7 && < 5
+- containers
+- parsec
+- haskeline
+- mtl                  # <--- RECOMENDADO: Agregado por si usas transformadores
+- aeson
+- scotty
+- text
+- cassava
+- bytestring
+- vector
+- unordered-containers
+- directory
+- filepath
+
+library:
+  source-dirs: src
+
+executables:
+  interprete-ar-exe:   # <--- CAMBIO: Nombre consistente (opcional, pero recomendado)
+    main:                Main.hs        # <--- CAMBIO: Mayúscula inicial (Main.hs)
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - interprete-ar    # <--- IMPORTANTE: Debe coincidir exactamente con el 'name' de arriba
