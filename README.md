@@ -35,19 +35,21 @@ Esto genera el ejecutable, correr en la terminal como:
 ```
 stack run
 ```
+Ahora **stack run** corre el servidor de la web en local (puerto 3000), abrir en
+
+* [URL]:(http://localhost:3000/studio)
 
 ## **Dentro de la CLI**
 Ya dentro de la CLI del intérprete, se podrá empezara usar el mismo junto a una base de datos que fue
 hardcodeada (usada en TBD). Las funcionalidades que provee el intérprete son:
 ```
-help                  muestra en pantalla las opciones de CLI
-exit                  sale de la CLI
+reset                 elimina asignaciones del catálogo  
 getcat                muestra en pantalla el catálogo
 
-SELECT (P) T            selecciona las filas de la tabla T que cumplent el predicado P
-PROJECT [ATR] T         proyecta las columnas ATR de la tabla T
+SELECT (P) T          selecciona las filas de la tabla T que cumplent el predicado P
+PROJECT [ATR] T       proyecta las columnas ATR de la tabla T
 RENAME X T            devuelve una tabla igual a T con sus atributos renombrados con X
-GROUP [G] (A) T          agrupa los atributos en G de T con las funciones de agregado en A
+GROUP [G] (A) T       agrupa los atributos en G de T con las funciones de agregado en A
 X <- EXP              crea una nueva tabla X con el resultado de evaluar EXP
 R U S                 une las filas de ambas tablas, sin duplicados
 R $ S                 devuelve las filas que están en ambas tablas

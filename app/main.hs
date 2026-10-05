@@ -14,8 +14,6 @@ import Eval
 import Parser
 import Common
 
-
--- http://localhost:3000/studio
 main :: IO ()
 main = do
     putStrLn "Iniciando servidor web y montando base de datos..."
