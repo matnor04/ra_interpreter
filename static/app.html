@@ -53,8 +53,8 @@
         <!-- Panel Derecho: Editor y Resultados -->
         <div class="editor-area">
             <div class="editor-header">
-                <div style="font-size: 13px; color: #858585;">Editor de Consultas</div>
-                <button class="button-run" onclick="ejecutar()">▶ Ejecutar</button>
+                <div style="font-size: 13px; color: #858585;">Editor de Consultas <span style="font-size: 11px; color: #606060;">(Ctrl+Enter / ⌘+Enter)</span></div>
+                <button class="button-run" onclick="ejecutar()" title="Ejecutar consulta (Ctrl+Enter / ⌘+Enter)">▶ Ejecutar</button>
             </div>
             
             <textarea id="codigo" placeholder="-- Escribe tu consulta aquí...&#10;SELECT (CIUDAD = 'Londres') S"></textarea>
@@ -79,6 +79,13 @@
                 document.getElementById('lista-tablas').innerHTML = '<span style="color: #f48771;">Error de servidor</span>';
             }
         };
+
+        document.getElementById('codigo').addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                e.preventDefault();
+                ejecutar();
+            }
+        });
 
         function verTabla(nombre) {
             document.getElementById('codigo').value = nombre;
