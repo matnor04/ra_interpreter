@@ -35,9 +35,10 @@ Esto genera el ejecutable, correr en la terminal como:
 ```
 stack run
 ```
+
 Ahora **stack run** corre el servidor de la web en local (puerto 3000), abrir en
 
-* [URL]:(http://localhost:3000/studio)
+* [Intérprete_AR] (http://localhost:3000/studio)
 
 ## **Dentro de la CLI**
 Ya dentro de la CLI del intérprete, se podrá empezara usar el mismo junto a una base de datos que fue
