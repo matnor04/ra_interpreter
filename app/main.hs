@@ -46,7 +46,7 @@ main = do
                     json $ object ["status" .= ("info" :: String), "msg" .= ("Catálogo reiniciado al estado inicial." :: String)]
                 
                 _ -> do
-                    case parse parseStmt "web" input of 
+                    case parse (totParser parseStmt) "web" input of 
                         Left err -> 
                             json $ object ["status" .= ("error" :: String), "msg" .= ("Error en parsing: " ++ show err)]
                         
