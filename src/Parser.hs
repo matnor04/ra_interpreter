@@ -82,6 +82,7 @@ parseVal = (N . fromInteger <$> integer)
 parseOp :: Parser Op 
 parseOp = (reservedOp "="  >> return Eq)
       <|> (reservedOp "<>" >> return Neq)
+      <|> (reservedOp "!=" >> return Neq)
       <|> (reservedOp ">=" >> return Ge)
       <|> (reservedOp "<=" >> return Le)
       <|> (reservedOp ">"  >> return Gt)
