@@ -120,6 +120,36 @@
             flex-direction: column;
         }
 
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 14px;
+        }
+
+        .button-upload {
+            background: rgba(99, 102, 241, 0.15);
+            color: #c7d2fe;
+            border: 1px solid rgba(99, 102, 241, 0.35);
+            padding: 5px 9px;
+            border-radius: 5px;
+            font-size: 11px;
+            font-weight: 600;
+            font-family: var(--font-ui);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .button-upload:hover {
+            background: rgba(99, 102, 241, 0.3);
+            color: #ffffff;
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
         .sidebar-title {
             font-size: 11px;
             font-weight: 600;
@@ -361,7 +391,13 @@
     <div class="main-content">
         <!-- Panel Izquierdo: Catálogo -->
         <div class="sidebar">
-            <div class="sidebar-title">Tablas en memoria</div>
+            <div class="sidebar-header">
+                <span class="sidebar-title" style="margin-bottom: 0;">Tablas en memoria</span>
+                <button class="button-upload" onclick="abrirSelectorCSV()" title="Subir archivo .csv al catálogo">
+                    <span>Cargar CSV</span>
+                </button>
+            </div>
+            <input type="file" id="input-csv" accept=".csv" style="display: none;" onchange="procesarArchivoCSV(event)">
             <div id="lista-tablas">
                 <div style="color: var(--text-muted); font-size: 13px;">⏳ Conectando...</div>
             </div>
@@ -416,7 +452,7 @@
             }
         });
 
-        window.onload = async function() {
+        async function cargarCatalogo() {
             try {
                 const res = await fetch('/api/catalog');
                 const tablas = await res.json();
@@ -433,7 +469,72 @@
                 document.getElementById('lista-tablas').innerHTML = 
                     '<div class="feedback-box feedback-error">Error al conectar con el servidor</div>';
             }
+        }
+
+        window.onload = function() {
+            cargarCatalogo();
         };
+
+        function abrirSelectorCSV() {
+            const input = document.getElementById('input-csv');
+            input.value = '';
+            input.click();
+        }
+
+        async function procesarArchivoCSV(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Obtener nombre base sin .csv y sanitizar
+            const rawName = file.name.replace(/\.[^/.]+$/, "");
+            let sugerencia = rawName.trim().replace(/[^a-zA-Z0-9_]/g, "_");
+            if (/^[0-9]/.test(sugerencia)) {
+                sugerencia = "T_" + sugerencia;
+            }
+
+            const nombreTabla = prompt("Nombre tabla nueva:", sugerencia);
+            if (!nombreTabla || nombreTabla.trim() === "") return;
+
+            let cleanNom = nombreTabla.trim().replace(/[^a-zA-Z0-9_]/g, "_");
+            if (/^[0-9]/.test(cleanNom)) {
+                cleanNom = "T_" + cleanNom;
+            }
+
+            const divRes = document.getElementById('resultado');
+            divRes.innerHTML = `<div style='color: var(--text-muted); font-size: 14px;'>⏳ Subiendo y procesando ${file.name}...</div>`;
+
+            try {
+                const contenido = await file.text();
+                const response = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nombre: cleanNom, contenido: contenido })
+                });
+                const res = await response.json();
+
+                if (res.status === 'ok') {
+                    await cargarCatalogo();
+                    divRes.innerHTML = `
+                        <div class="feedback-box feedback-success">
+                            <span>✅</span>
+                            <div>${res.msg}</div>
+                        </div>`;
+                    verTabla(res.nombre);
+                } else {
+                    divRes.innerHTML = `
+                        <div class="feedback-box feedback-error">
+                            <span>❌</span>
+                            <div><strong>Error al subir archivo:</strong><br>${res.msg}</div>
+                        </div>`;
+                }
+            } catch (e) {
+                divRes.innerHTML = `
+                    <div class="feedback-box feedback-error">
+                        <span>❌</span>
+                        <div><strong>Error:</strong> Falló la comunicación con el servidor al subir el archivo.</div>
+                    </div>`;
+            }
+        }
 
         function verTabla(nombre) {
             if (editor) {
@@ -465,7 +566,7 @@
                             <div><strong>Error de evaluación:</strong><br><span style="font-family: var(--font-code); font-size: 12.5px;">${res.msg}</span></div>
                         </div>`;
                 } else if (res.status === 'info') {
-                    window.onload(); // Recargar el catálogo izquierdo si hubo asignaciones
+                    await cargarCatalogo(); // Recargar el catálogo izquierdo si hubo asignaciones
                     divRes.innerHTML = `
                         <div class="feedback-box feedback-success">
                             <span>✅</span>

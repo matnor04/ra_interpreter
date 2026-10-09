@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module CSVLoader (cargarCatalogoCSV) where
+module CSVLoader (cargarCatalogoCSV, parsearTablaCSV, cargarTablaCSV) where
 
 import Data.Csv
 import qualified Data.ByteString.Lazy as BL
@@ -21,23 +21,28 @@ convertirCelda bs =
          Just numero -> N numero
          Nothing     -> Str str
 
--- 2. Procesar un archivo individual
-cargarTablaCSV :: FilePath -> IO (Maybe Tabla)
-cargarTablaCSV ruta = do
-    csvData <- BL.readFile ruta
-    -- decodeByName asume que la primera fila tiene los nombres de las columnas
+-- 2. Procesar CSV desde ByteString
+parsearTablaCSV :: BL.ByteString -> Either String Tabla
+parsearTablaCSV csvData =
     case decodeByName csvData of
-        Left err -> do
-            putStrLn $ "Error leyendo " ++ ruta ++ ": " ++ err
-            return Nothing
-        Right (_, v) -> do
-            -- Convertimos la estructura de Cassava a nuestro [Map String Valor]
+        Left err -> Left err
+        Right (_, v) ->
             let tabla = map convertirFila (V.toList v)
-            return (Just tabla)
+            in Right tabla
   where
     convertirFila :: HM.HashMap B8.ByteString B8.ByteString -> M.Map String Valor
     convertirFila hm = 
         M.fromList [ (B8.unpack k, convertirCelda v) | (k, v) <- HM.toList hm ]
+
+-- 3. Procesar un archivo individual
+cargarTablaCSV :: FilePath -> IO (Maybe Tabla)
+cargarTablaCSV ruta = do
+    csvData <- BL.readFile ruta
+    case parsearTablaCSV csvData of
+        Left err -> do
+            putStrLn $ "Error leyendo " ++ ruta ++ ": " ++ err
+            return Nothing
+        Right tabla -> return (Just tabla)
 
 -- 3. Cargar toda la carpeta
 cargarCatalogoCSV :: FilePath -> IO Catalogo
