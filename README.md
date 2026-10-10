@@ -58,6 +58,14 @@ R - S                 devuelve las filas de R que no están en S
 R X S                 producto cartesiano entre tablas
 R |X| S               producto natural entre tablas
 R / S                 division entre tablas
+
+Cambios 10/10/2026
+Fueron agregadas al lenguaje sentencias de creación de datos tipo DDL de SQL. Los comandos nuevos son:
+
+CREATE Tabla Atrs           crea una tabla vacía a partir de una lista de pares atributo-tipo
+DROP Tabla                  elimina una tabla si existe en el catálogo
+INSERT Tabla VALUES Vals    inserta filas nuevas en una tabla existente
+
 ```
 Algunas cosas a tener en cuenta para escribir consultas:
 

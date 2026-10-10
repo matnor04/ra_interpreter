@@ -57,13 +57,19 @@ data ARExp =  Tab NombreRel
             | Inters ARExp ARExp 
             | Div ARExp ARExp
             | Agrup [Atributo] [(AgFun, Atributo)] ARExp
-            deriving (Show, Eq)
+ deriving (Show, Eq)
+
+data Tipo = TStr | TNum
+ deriving (Show, Eq)
 
 -- Statements
-data Stmt =   Query ARExp 
-            | Assign NombreRel ARExp 
+data Stmt =   Query ARExp                   -- DML 
+            | Assign NombreRel ARExp        
+            | Create NombreRel [(Atributo, Tipo)]   -- DDL
+            | Drop NombreRel
+            | Insert NombreRel [[Valor]]
             | Seq Stmt Stmt
-                deriving (Show, Eq)
+ deriving (Show, Eq)
 
 -- web app
 instance ToJSON Valor where

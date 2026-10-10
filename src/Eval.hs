@@ -310,8 +310,9 @@ evalStmt (Query exp) cat =
        Undef n -> Undef n
        Impos m -> Impos m
 
-evalStmt (Seq s1 s2) cat = do (_, cat') <- evalStmt s1 cat
-                              evalStmt s2 cat' -- evaluar con el catálogo resultante
+evalStmt (Seq s1 s2) cat = do 
+    (_, cat') <- evalStmt s1 cat
+    evalStmt s2 cat' -- evaluar con el catálogo resultante
 
 evalStmt (Assign x exp) cat = 
     case M.lookup x cat of -- nos fijamos si el nombre ya está en uso
@@ -319,4 +320,21 @@ evalStmt (Assign x exp) cat =
                    Res t -> return (Nothing, M.insert x t cat)
                    Undef n -> Undef n
                    Impos m -> Impos m
-      Just _ -> Impos ("La tabla " ++ x ++ " ya existe")
+      Just _ -> Impos $ "La tabla " ++ x ++ " ya existe"
+
+evalStmt (Create name atrs) cat = 
+    case M.lookup name cat of 
+        Nothing -> do 
+            let filaVacia = 
+                 M.fromList [(atr, if ty == TNum then N 0 else Str "")
+                           | (atr, ty) <- atrs] 
+            let tablaNueva = [filaVacia] 
+            return (Nothing, M.insert name tablaNueva cat) 
+        Just _ -> Impos $ "La tabla " ++ name ++ " ya existe"
+
+evalStmt (Drop name) cat = do 
+    case M.lookup name cat of 
+        Nothing -> Impos $ "La tabla " ++ name ++ " no está en el catálogo"
+        Just _ -> return (Nothing, M.delete name cat)
+
+evalStmt (Insert name vals) cat = undefined -- por ahora

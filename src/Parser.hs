@@ -11,22 +11,24 @@ ar :: T.TokenParser u
 ar = T.makeTokenParser 
     emptyDef{
         T.reservedNames =
-           ["PROJECT", "SELECT", "RENAME", "GROUP",  -- operaciones AR
+           ["PROJECT", "SELECT", "RENAME", "GROUP",  -- operaciones AR (DML)
             "AND","OR","NOT",                        -- operaciones lógicas
+            "Str", "Num",                            -- tipos de los atributos y valores
             "SUM", "COUNT", "AVG", "MAX", "MIN",     -- funciones de agrupamiento
             "AS",                                    -- reservada para agrupamiento
-            "exit", "getcat", "help"],               -- reservada para comandos CLI   
- 
+            "exit", "getcat", "help",                -- reservada para comandos CLI   
+            "CREATE", "DROP", "INSERT", "VALUES"],   -- definicion de datos (DDL)
         T.reservedOpNames = [
                           "=", "<>", ">", "<","<=",">=", -- comparación
-                          "X",   -- producto cartesiano
-                          "-",   -- diferencia
-                          "|X|", -- producto natural
-                          "/",   -- división
-                          "U",   -- unión
-                          "$",  -- intersección
-                          "<-"   -- asignación
-                          ,";"
+                          "X",    -- producto cartesiano
+                          "-",    -- diferencia
+                          "|X|",  -- producto natural
+                          "/",    -- división
+                          "U",    -- unión
+                          "$",    -- intersección
+                          "<-",   -- asignación
+                          ";",    -- secuenciar consultas 
+                          ":"     -- declaración de tipos
                           ]
     }
 
@@ -169,6 +171,9 @@ parseStmt = do stmts <- sepBy1 parseStmt' (reservedOp ";")
  
 parseStmt' :: Parser Stmt
 parseStmt' = try parseAssign <|> (Query <$> parseARExp)
+                             <|> parseCreate
+                             <|> parseDrop
+                             <|> parseInsert
 
 parseAssign :: Parser Stmt
 parseAssign = do
@@ -176,6 +181,36 @@ parseAssign = do
     reservedOp "<-"
     exp <- parseARExp
     return (Assign nom exp)
+
+-- parser del Data Definition Language (DDL) de AR
+parseTipo :: Parser Tipo 
+parseTipo = (reserved "Str" >> return TStr)  
+            <|> (reserved "Num" >> return TNum)
+
+parseCreate :: Parser Stmt 
+parseCreate = do 
+    reserved "CREATE"
+    name <- identifier 
+    atrs <- brackets (commaSep $ do atr <- identifier
+                                    reservedOp ":"
+                                    ty <- parseTipo
+                                    return (atr, ty))
+    return (Create name atrs)
+
+parseDrop :: Parser Stmt
+parseDrop = do 
+    reserved "DROP"
+    name <- identifier 
+    return (Drop name)
+
+
+parseInsert :: Parser Stmt
+parseInsert = do 
+    reserved "INSERT"
+    name <- identifier 
+    reserved "VALUES"
+    vals <- brackets (commaSep $ parens (commaSep $ parseVal))
+    return (Insert name vals)
 
 
 
