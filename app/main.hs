@@ -36,8 +36,13 @@ main = do
     estadoGlobal <- newIORef catInicial
     
     scotty 3000 $ do
-        -- html principal
-        get "/studio" $ file "static/app.html"
+        -- html principal y recursos estáticos
+        get "/"          $ redirect "/studio"
+        get "/studio"     $ file "static/index.html"
+        get "/styles.css" $ file "static/styles.css"
+        get "/app.js"     $ file "static/app.js"
+        get "/static/styles.css" $ file "static/styles.css"
+        get "/static/app.js"     $ file "static/app.js"
         
         get "/api/catalog" $ do
             catActual <- liftIO $ readIORef estadoGlobal

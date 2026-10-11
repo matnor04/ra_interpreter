@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intérprete AR - Studio</title>
+    
+    <!-- Fuentes Google: Inter & JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- CodeMirror (Editor de código) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/sql/sql.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/addon/edit/closebrackets.min.js"></script>
+
+    <!-- Estilos de la aplicación -->
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body role="application">
+    <!-- Barra superior -->
+    <header class="header">
+        <div class="header-brand">
+            <span class="header-icon">⚡</span>
+            <span>Álgebra Relacional Studio</span>
+        </div>
+        <div class="badge-status">Scotty Online</div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="main-content">
+        <!-- Panel Izquierdo: Catálogo de tablas -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span class="sidebar-title">Tablas en memoria</span>
+                <button class="button-upload" onclick="abrirSelectorCSV()" title="Subir archivo .csv al catálogo">
+                    <span>+ Subir CSV</span>
+                </button>
+            </div>
+            <input type="file" id="input-csv" accept=".csv" style="display: none;" onchange="procesarArchivoCSV(event)">
+            <div id="lista-tablas">
+                <div style="color: var(--text-muted); font-size: 13px;">⏳ Conectando...</div>
+            </div>
+        </aside>
+        
+        <!-- Panel Derecho: Editor y Resultados -->
+        <section class="editor-area">
+            <div class="editor-header">
+                <div class="editor-title">
+                    <span>Editor de Consultas</span>
+                    <span class="shortcut-pill">Ctrl+Enter / ⌘+Enter</span>
+                </div>
+                <button class="button-run" onclick="ejecutar()" title="Ejecutar consulta (Ctrl+Enter / ⌘+Enter)">
+                    <span>▶</span> Ejecutar
+                </button>
+            </div>
+            
+            <textarea id="codigo" placeholder="-- Escribe tu consulta aquí...&#10;SELECT (CIUDAD = 'Londres') S"></textarea>
+            
+            <div class="results-area" id="resultado">
+                <div class="placeholder-text">Los resultados de la consulta aparecerán aquí.</div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Lógica de la aplicación -->
+    <script src="/app.js"></script>
+</body>
+</html>
