@@ -17,7 +17,7 @@ ar = T.makeTokenParser
             "SUM", "COUNT", "AVG", "MAX", "MIN",     -- funciones de agrupamiento
             "AS",                                    -- reservada para agrupamiento
             "exit", "getcat", "help",                -- reservada para comandos CLI   
-            "CREATE", "DROP", "INSERT", "VALUES"],   -- definicion de datos (DDL)
+            "CREATE", "DROP", "INSERT", "INTO", "VALUES"],   -- definicion de datos (DDL)
         T.reservedOpNames = [
                           "=", "<>", ">", "<","<=",">=", -- comparación
                           "X",    -- producto cartesiano
@@ -207,9 +207,10 @@ parseDrop = do
 parseInsert :: Parser Stmt
 parseInsert = do 
     reserved "INSERT"
+    reserved "INTO"
     name <- identifier 
     reserved "VALUES"
-    vals <- brackets (commaSep $ parens (commaSep $ parseVal))
+    vals <- commaSep $ parens (commaSep $ parseVal)
     return (Insert name vals)
 
 
