@@ -337,4 +337,22 @@ evalStmt (Drop name) cat = do
         Nothing -> Impos $ "La tabla " ++ name ++ " no está en el catálogo"
         Just _ -> return (Nothing, M.delete name cat)
 
-evalStmt (Insert name vals) cat = undefined -- por ahora
+evalStmt (Insert name vals) cat = 
+    case M.lookup name cat of 
+        Nothing -> Undef name
+        Just tabla -> insertarFilas tabla vals cat 
+    
+    where 
+        insertarFilas t' [] c = return (Nothing, c)
+        insertarFilas t' v c = 
+             if comp' v (M.toList $ head t')
+             then do let esq = getEsq t'
+                     let filasNuevas = map (\vlist -> M.fromList (zip esq vlist)) vals
+                     return (Nothing, M.insert name (t' ++ filasNuevas) cat)
+             else Impos $ "Filas no coinciden con el esquema de "++ name ++ ": " ++ show (getEsq t')
+        
+        comp [] [] = True
+        comp (N _ : xs) ((_, N _): ys) = comp xs ys 
+        comp (Str _ : xs) ((_, Str _): ys) = comp xs ys
+        comp _ _ = False 
+        comp' vs f = foldl (&&) True (map (\v -> comp v f ) vs)
